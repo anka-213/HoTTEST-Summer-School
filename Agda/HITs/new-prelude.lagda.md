@@ -53,10 +53,17 @@ infix 0 _∼_
 _≡⟨_⟩_ : {l : Level} {X : Type l} (x : X) {y z : X} → x ≡ y → y ≡ z → x ≡ z
 x ≡⟨ p ⟩ q = p ∙ q
 
+_≡⟨⟩_ : {l : Level} {X : Type l} (x : X) {y : X} → x ≡ y → x ≡ y
+x ≡⟨⟩ q = q
+
+-- _≡⟨⟩_ : {A : Type ℓ} (x : A) {y : A} → x ≡ y → x ≡ y
+-- _ ≡⟨⟩ x≡y = x≡y
+
 _∎ : {l : Level} {X : Type l} (x : X) → x ≡ x
 x ∎ = refl x
 
 infixr  0 _≡⟨_⟩_
+infixr  0 _≡⟨⟩_
 infix   1 _∎
 
 record Σ {l1 l2 : Level} {A : Type l1 } (B : A → Type l2) : Type (l1 ⊔ l2)  where
@@ -144,4 +151,5 @@ data ℕ : Type where
  zero : ℕ
  suc  : ℕ → ℕ
 
+{-# BUILTIN NATURAL ℕ #-}
 ```

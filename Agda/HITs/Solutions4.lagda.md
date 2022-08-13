@@ -140,8 +140,13 @@ prove that such functions are inverse yet.
 c2s : Circle2 → Susp Bool
 c2s = Circle2-rec northS southS (merid true) (merid false)
 
+b2c : Bool → north ≡ south
+b2c true = west
+b2c false = east
+
 s2c : Susp Bool → Circle2
-s2c = Susp-rec north south (\ { true → west ; false →  east })
+s2c = Susp-rec north south b2c
+-- s2c = Susp-rec north south (\ { true → west ; false →  east })
 ```
 
 Suspension is a functor from types, which means that it acts on

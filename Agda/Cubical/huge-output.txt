@@ -1,0 +1,252 @@
+Goal: hcomp (λ i₁ .o → fro (sides line2 line1 i j i₁ _))
+      (back-to-front line2'' line1'' square'' i j)
+      ≡ square'' i j
+———— Boundary ——————————————————————————————————————————————
+i = i0 ⊢ hcomp
+         (λ i₁ .o →
+            transp
+            (λ i₂ →
+               hcomp
+               (λ i₃ .o₁ →
+                  fro
+                  (to
+                   (primPOr (~ j ∨ j) (~ i₂ ∧ ~ i₁)
+                    (λ { (j = i0) → refl (~ ((i₂ ∨ i₁) ∧ i₃))
+                       ; (j = i1) → line1'' ((i₂ ∨ i₁) ∧ i₃)
+                       })
+                    (λ .o₂ → line2'' j) _)))
+               (line2'' j)
+               ≡
+               hcomp
+               (λ j₁ →
+                  primPOr (~ j ∨ j) (~ i₂ ∧ ~ i₁)
+                  (λ { (j = i0) → refl (~ ((i₂ ∨ i₁) ∧ j₁))
+                     ; (j = i1) → line1'' ((i₂ ∨ i₁) ∧ j₁)
+                     })
+                  (λ .o₁ → line2'' j))
+               (line2'' j))
+            i₁
+            (froTo ((λ { (j = i0) → refl (~ i₁) ; (j = i1) → line1'' i₁ }) _)))
+         (transp
+          (λ i₁ →
+             hcomp
+             (λ i₂ .o →
+                fro
+                (to
+                 (primPOr (~ j ∨ j) (~ i₁)
+                  (λ { (j = i0) → refl (~ (i₁ ∧ i₂))
+                     ; (j = i1) → line1'' (i₁ ∧ i₂)
+                     })
+                  (λ .o₁ → line2'' j) _)))
+             (line2'' j)
+             ≡
+             hcomp
+             (λ j₁ →
+                primPOr (~ j ∨ j) (~ i₁)
+                (λ { (j = i0) → refl (~ (i₁ ∧ j₁))
+                   ; (j = i1) → line1'' (i₁ ∧ j₁)
+                   })
+                (λ .o → line2'' j))
+             (line2'' j))
+          i0 refl)
+i = i1 ⊢ hcomp
+         (λ i₁ .o →
+            transp
+            (λ i₂ →
+               hcomp
+               (λ i₃ .o₁ →
+                  fro
+                  (to
+                   (primPOr (~ j ∨ j) (~ i₂ ∧ ~ i₁)
+                    (λ { (j = i0) → line1'' (~ ((i₂ ∨ i₁) ∧ i₃))
+                       ; (j = i1) → refl ((i₂ ∨ i₁) ∧ i₃)
+                       })
+                    (λ .o₂ → line2'' j) _)))
+               (line2'' j)
+               ≡
+               hcomp
+               (λ j₁ →
+                  primPOr (~ j ∨ j) (~ i₂ ∧ ~ i₁)
+                  (λ { (j = i0) → line1'' (~ ((i₂ ∨ i₁) ∧ j₁))
+                     ; (j = i1) → refl ((i₂ ∨ i₁) ∧ j₁)
+                     })
+                  (λ .o₁ → line2'' j))
+               (line2'' j))
+            i₁
+            (froTo ((λ { (j = i0) → line1'' (~ i₁) ; (j = i1) → refl i₁ }) _)))
+         (transp
+          (λ i₁ →
+             hcomp
+             (λ i₂ .o →
+                fro
+                (to
+                 (primPOr (~ j ∨ j) (~ i₁)
+                  (λ { (j = i0) → line1'' (~ (i₁ ∧ i₂))
+                     ; (j = i1) → refl (i₁ ∧ i₂)
+                     })
+                  (λ .o₁ → line2'' j) _)))
+             (line2'' j)
+             ≡
+             hcomp
+             (λ j₁ →
+                primPOr (~ j ∨ j) (~ i₁)
+                (λ { (j = i0) → line1'' (~ (i₁ ∧ j₁))
+                   ; (j = i1) → refl (i₁ ∧ j₁)
+                   })
+                (λ .o → line2'' j))
+             (line2'' j))
+          i0 refl)
+j = i0 ⊢ refl
+j = i1 ⊢ refl
+————————————————————————————————————————————————————————————
+j : I
+i : I
+———— Constraints ———————————————————————————————————————————
+point = ?13 (j = i1) i₁ : Torus'' (blocked on _1988)
+point = ?13 (j = i0) i₁ : Torus'' (blocked on _1988)
+hcomp
+(λ i' →
+   primPOr (~ j ∨ j) (~ i₁ ∨ i₁)
+   (λ .o →
+      hcomp
+      (λ i₂ .o₁ →
+         primPOr i' (~ i₁ ∨ i₁)
+         (λ .o₂ →
+            froTo ((λ { (j = i0) → line1'' (~ i') ; (j = i1) → refl i' }) _)
+            i₁)
+         (primPOr (~ i₁) i₁
+          (λ _ →
+             hcomp
+             (λ i₃ .o₂ →
+                fro
+                (to
+                 (primPOr (~ j ∨ j) (~ i₂ ∧ ~ i')
+                  (λ { (j = i0) → line1'' (~ ((i₂ ∨ i') ∧ i₃))
+                     ; (j = i1) → refl ((i₂ ∨ i') ∧ i₃)
+                     })
+                  (λ .o₃ → line2'' j) _)))
+             (line2'' j))
+          (λ _ →
+             hcomp
+             (λ j₁ →
+                primPOr (~ j ∨ j) (~ i₂ ∧ ~ i')
+                (λ { (j = i0) → line1'' (~ ((i₂ ∨ i') ∧ j₁))
+                   ; (j = i1) → refl ((i₂ ∨ i') ∧ j₁)
+                   })
+                (λ .o₂ → line2'' j))
+             (line2'' j)))
+         _)
+      (froTo ((λ { (j = i0) → line1'' (~ i') ; (j = i1) → refl i' }) _)
+       i₁))
+   (primPOr (~ i₁) i₁
+    (λ _ →
+       hcomp
+       (λ i₂ .o →
+          fro
+          (to ((λ { (j = i0) → line1'' (~ i₂) ; (j = i1) → refl i₂ }) _)))
+       (line2'' j))
+    (λ _ →
+       hcomp (λ j₁ → λ { (j = i0) → line1'' (~ j₁) ; (j = i1) → refl j₁ })
+       (line2'' j))))
+(hcomp
+ (λ i₂ .o →
+    primPOr (~ i₁) i₁
+    (λ _ →
+       hcomp
+       (λ i₃ .o₁ →
+          fro
+          (to
+           (primPOr (~ j ∨ j) (~ i₂)
+            (λ { (j = i0) → line1'' (~ (i₂ ∧ i₃))
+               ; (j = i1) → refl (i₂ ∧ i₃)
+               })
+            (λ .o₂ → line2'' j) _)))
+       (line2'' j))
+    (λ _ →
+       hcomp
+       (λ j₁ →
+          primPOr (~ j ∨ j) (~ i₂)
+          (λ { (j = i0) → line1'' (~ (i₂ ∧ j₁))
+             ; (j = i1) → refl (i₂ ∧ j₁)
+             })
+          (λ .o₁ → line2'' j))
+       (line2'' j))
+    _)
+ (refl i₁))
+  = ?13 (i = i1) i₁
+  : Torus''
+  (blocked on _1988)
+hcomp
+(λ i' →
+   primPOr (~ j ∨ j) (~ i₁ ∨ i₁)
+   (λ .o →
+      hcomp
+      (λ i₂ .o₁ →
+         primPOr i' (~ i₁ ∨ i₁)
+         (λ .o₂ →
+            froTo ((λ { (j = i0) → refl (~ i') ; (j = i1) → line1'' i' }) _)
+            i₁)
+         (primPOr (~ i₁) i₁
+          (λ _ →
+             hcomp
+             (λ i₃ .o₂ →
+                fro
+                (to
+                 (primPOr (~ j ∨ j) (~ i₂ ∧ ~ i')
+                  (λ { (j = i0) → refl (~ ((i₂ ∨ i') ∧ i₃))
+                     ; (j = i1) → line1'' ((i₂ ∨ i') ∧ i₃)
+                     })
+                  (λ .o₃ → line2'' j) _)))
+             (line2'' j))
+          (λ _ →
+             hcomp
+             (λ j₁ →
+                primPOr (~ j ∨ j) (~ i₂ ∧ ~ i')
+                (λ { (j = i0) → refl (~ ((i₂ ∨ i') ∧ j₁))
+                   ; (j = i1) → line1'' ((i₂ ∨ i') ∧ j₁)
+                   })
+                (λ .o₂ → line2'' j))
+             (line2'' j)))
+         _)
+      (froTo ((λ { (j = i0) → refl (~ i') ; (j = i1) → line1'' i' }) _)
+       i₁))
+   (primPOr (~ i₁) i₁
+    (λ _ →
+       hcomp
+       (λ i₂ .o →
+          fro
+          (to ((λ { (j = i0) → refl (~ i₂) ; (j = i1) → line1'' i₂ }) _)))
+       (line2'' j))
+    (λ _ →
+       hcomp (λ j₁ → λ { (j = i0) → refl (~ j₁) ; (j = i1) → line1'' j₁ })
+       (line2'' j))))
+(hcomp
+ (λ i₂ .o →
+    primPOr (~ i₁) i₁
+    (λ _ →
+       hcomp
+       (λ i₃ .o₁ →
+          fro
+          (to
+           (primPOr (~ j ∨ j) (~ i₂)
+            (λ { (j = i0) → refl (~ (i₂ ∧ i₃))
+               ; (j = i1) → line1'' (i₂ ∧ i₃)
+               })
+            (λ .o₂ → line2'' j) _)))
+       (line2'' j))
+    (λ _ →
+       hcomp
+       (λ j₁ →
+          primPOr (~ j ∨ j) (~ i₂)
+          (λ { (j = i0) → refl (~ (i₂ ∧ j₁))
+             ; (j = i1) → line1'' (i₂ ∧ j₁)
+             })
+          (λ .o₁ → line2'' j))
+       (line2'' j))
+    _)
+ (refl i₁))
+  = ?13 (i = i0) i₁
+  : Torus''
+  (blocked on _1988)
+_1809 := λ {l} {X} x p q i → ?1 (x = x) (p = p) (q = q) (i = i)
+  (blocked on problem 3660)

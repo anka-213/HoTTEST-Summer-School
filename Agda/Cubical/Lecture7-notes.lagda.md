@@ -115,8 +115,8 @@ Note that we cannot pattern-match on interval variables as `I` is not
 inductively defined. Try uncommenting and typing `C-c C-c` in the hole:
 
 ```text
-oops : {A : Type} → I → A
-oops r = {!r!}
+-- oops : {A : Type} → I → A
+-- oops r = {!r!}
 ```
 
 It quickly gets tiring to write `{A : Type ℓ}` everywhere, so let's

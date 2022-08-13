@@ -295,6 +295,9 @@ quotients, suspensions, pushouts, truncations.
 # Suspensions
 
 ```agda
+-- PathP : ∀ {A B : Type} (P : A → Type)
+-- PathP P x y = ?
+
 postulate
   Susp : Type → Type
   northS : {A : Type} → Susp A
@@ -308,17 +311,20 @@ postulate
 # Pushouts
 
 ```agda
-postulate 
+postulate
   Pushout : (C : Type) (A : Type) (B : Type) (f : C → A) (g : C → B) → Type
 
 module _  {C : Type} {A : Type} {B : Type} {f : C → A} {g : C → B} where
-  
+
   postulate
     inl : A → Pushout C A B f g
     inr : B → Pushout C A B f g
     glue : (c : C) → inl (f c) ≡ inr (g c)
     Push-rec : {X : Type} (l : A → X) (r : B → X) (gl : (c : C) → l (f c) ≡ r (g c))
              → Pushout C A B f g → X
+  postulate
+    Push-rec-inl : {X : Type} (l : A → X) (r : B → X) (gl : (c : C) → l (f c) ≡ r (g c))
+             → (x : A) → Push-rec l r gl (inl x) ≡ l x
 ```
 
 # Relation quotient
