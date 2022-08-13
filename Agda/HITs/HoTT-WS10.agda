@@ -57,6 +57,10 @@ bind-unit-r m = trunc _ _
 maptrunc : {B : Type} → (A → B) → ∥ A ∥₋₁ → ∥ B ∥₋₁
 maptrunc f = bindtrunc (λ x → ∣ f x ∣)
 
+_<&>_ : {B : Type} → ∥ A ∥₋₁ → (A → B) → ∥ B ∥₋₁
+x <&> f = maptrunc f x
+
+
 _↔_ : (P Q : Type) → Type
 P ↔ Q = (P → Q) × (Q → P)
 
@@ -553,6 +557,12 @@ pair≡d-refl : {l1 l2 : Level} {A : Type l1} {B : A → Type l2}
        → (a , b) ≡ (a , b') [ Σ B ]
 pair≡d-refl (refl _) = refl _
 
+pair≡d-prop : {l1 l2 : Level} {A : Type l1} {B : A → Type l2}
+         {a a' : A} (p : a ≡ a')
+         {b : B a} {b' : B a'} (q : ∀ a → is-prop (B a))
+       → (a , b) ≡ (a' , b') [ Σ B ]
+pair≡d-prop {a = a} (refl _) ip = ap (a ,_) (ip a _ _)
+
 finite-to-set : ∀ (fin-Y : is-finite A) → (x y : A) → is-prop (x ≡ y)
 finite-to-set = {!!}
 
@@ -567,21 +577,29 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjectiv
       y-set : is-set Y
       y-set = {!!}
 
-      lem1 : ∀ n → (fn : Fin n → Y) → is-surjective fn → (Fin n ≃ X) → ∥ Sigma ℕ (λ n → Fin n ≃ Y) ∥₋₁
-      lem1 zero fn fn-surj eq = unit (zero , mkEquiv
+      lem1 : ∀ n → (fn : Fin n → Y) → is-surjective fn → ∥ Sigma ℕ (λ n → Fin n ≃ Y) ∥₋₁
+      lem1 zero fn fn-surj = unit (zero , mkEquiv
         fin0-elim bwd-fn (λ ())
         λ y → fin0-elim (bwd-fn y))
         where
-        bwd-fn = (λ y → untrunc (λ ()) (λ {(z , zeq) → bwd eq z}) (f-surj y))
+        bwd-fn :  Y → Fin zero
+        bwd-fn y = fn-surj y [ (λ ()) ]>>= pr₁
+        -- bwd-fn = (λ y → untrunc (λ ()) (λ {(z , zeq) → bwd eq z}) (f-surj y))
       -- lem1 (suc n) f eq = {!f-surj!}
-      lem1 (suc n) fn fn-surj eq = case q6a fn fin-finite y-discr (fn zero) of λ where
-        (inl+ 0-inIm) → maptrunc (λ {(x , xeq) → suc n , {!lem (n , ?)!}}) 0-inIm
+      lem1 (suc n) fn fn-surj = case q6a fn' fin-finite y-discr (fn zero) of λ where
+        -- (inl+ 0-inIm) → maptrunc (λ {(x , xeq) → suc n , {!lem1 n fn' (fn'-surj 0-inIm)!}}) 0-inIm
+        (inl+ 0-inIm) → lem1 n fn' (fn'-surj 0-inIm)
         (inr+ 0-not-inIm) → {!lem1 n fn'!}
           where
           -- The ristriction of f where n > 0
           fn' : Fin n → Y
           fn' m = fn (suc m)
           -- f-n' m = f (fwd eq (suc m))
+
+          fn'-surj : inIm fn' (fn zero) → is-surjective fn'
+          fn'-surj 0-inIm y = fn-surj y >>= λ where
+            (zero , meq) → 0-inIm <&> λ where (z , zeq) → z , (zeq ∙ meq)
+            (suc m , meq) → ∣ m , meq ∣
 
           imAtZero = λ y → (fn zero ≡ y) × ¬ (inIm fn' y)
           imAt = λ y → inIm fn' y ∔ imAtZero y
@@ -605,6 +623,11 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjectiv
 
           myIm = Σ imAt
 
+          im-discrete : is-discrete myIm
+          im-discrete (x , xi) (y , yi) = case y-discr x y of λ where
+            (inl+ x=y) → inl+ (pair≡d-prop x=y imAt-prop)
+            (inr+ neq) → inr+ (λ where (refl _) → neq (refl _))
+
           Y≃im : Y ≃ myIm
           Y≃im = mkEquiv to' fro froTo toFro
             where
@@ -621,40 +644,10 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjectiv
             froTo : ∀ y → fro (to' y) ≡ y
             froTo y = refl _
 
-          -- map-∔ :
-          -- y-to-im' : Y → image fn' ∔ (Σ λ y → fn zero ≡ y)
-          -- y-to-im' y = case y-to-im'' y of λ where
-          --   (inl+ x) → inl+ (y , x)
-          --   (inr+ x) → inr+ (y , x)
-
-          -- y-to-im' y = case q6a fn' fin-finite y-discr y of λ where
-          --    (inl+ y-inIm) → inl+ (y , y-inIm)
-          --    (inr+ ¬in-im) → inr+ (y , (fn-surj y [ {!!} ]>>= λ where
-          --      (zero , fn0=y) → fn0=y
-          --      (suc n' , n'eq) → (¬in-im ∣ n' , n'eq ∣) ↯))
-
-          -- y-to-im : Y → image fn' ∔ Unit
-          -- y-to-im y = case q6a fn' fin-finite y-discr y of λ where
-          --    (inl+ y-inIm) → inl+ (y , y-inIm)
-          --    (inr+ ¬in-im) → inr+ ⋆
-          --    -- (inr+ ¬in-im) → inr+ {!fn-surj y!}
-          -- im-to-y : image fn' ∔ Unit → Y
-          -- im-to-y (inl+ (y , y-in-inm)) = y
-          -- im-to-y (inr+ ⋆) = fn zero
-          -- y-im-y : (y : Y) → im-to-y (y-to-im y) ≡ y
-          -- y-im-y y = case y-to-im y of λ where
-          --    (inl+ y-inIm) → {!y-to-im y!}
-          --    (inr+ ¬in-im) → {!!}
-          -- -- y-im-y y = case q6a fn' fin-finite y-discr y of λ where
-          -- --    (inl+ y-inIm) → {!y-to-im y!}
-          -- --    (inr+ ¬in-im) → {!!}
-          -- im-y-im : (im : image fn' ∔ Unit) → y-to-im (im-to-y im) ≡ im
-          -- im-y-im (inl+ x) = {!!}
-          -- im-y-im (inr+ x) = {!!}
 
       -- lem (n , eq) = pr₁ q1b ∣ (n , lem1 n eq) ∣
       lem : Sigma ℕ (λ n → Fin n ≃ X) → ∥ Sigma ℕ (λ n → Fin n ≃ Y) ∥₋₁
-      lem (n , eq) = lem1 n fn fn-surj eq
+      lem (n , eq) = lem1 n fn fn-surj
         where
           fwd-mp : Fin n → X
           fwd-mp = fwd eq
@@ -663,12 +656,15 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjectiv
           eq'-bwd : is-equiv' fwd-mp
           eq'-bwd = _≃'_.is-equivalence eq'
 
+          fn : (x : Fin n) → Y
           fn = (λ x → f (fwd eq x))
           fn-surj : is-surjective fn
-          fn-surj = {!!}
+          fn-surj y = f-surj y <&> λ where
+             (x , fx=y) → (bwd2 eq x) , (ap f (fwd-bwd2 eq x) ∙ fx=y)
 
-          rev-fn : Y → ∥ Fin n ∥₋₁
-          rev-fn y = maptrunc (λ fb → {! (eq'-bwd (pr₁ fb))!}) (f-surj y)
+          -- rev-fn : Y → ∥ Fin n ∥₋₁
+          -- rev-fn y = maptrunc (λ fb → {! (eq'-bwd (pr₁ fb))!}) (f-surj y)
+
       -- lem (zero , eq) = pr₁ q1b ∣ zero , {!!} ∣
       -- lem (zero , eq) = unit (zero , mkEquiv
       --   fin0-elim bwd-fn (λ ())
