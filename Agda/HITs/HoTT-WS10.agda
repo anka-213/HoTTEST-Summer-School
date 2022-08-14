@@ -280,24 +280,24 @@ elim-invs f g gf (refl _) = elim-invs' f g (gf _)
 --             ! (gf x) ∙ (ap g (ap f x=y) ∙ gf y) ≡ x=y
 -- elim-invs' = ?
 
-elim-invs-2 : ∀ {x y : A} (f : A → B)
-                (g : B → A) (gf : (z : A) → g (f z) ≡ z)
-                (fx=fy : f x ≡ f y) →
-              ap f (! (gf x) ∙ (ap g fx=fy ∙ gf y)) ≡ fx=fy
-elim-invs-2 {x = x} {y = y} f g gf fx=fy =
-  ap f (! (gf _) ∙ (ap g fx=fy ∙ gf _)) ≡⟨ {!!} ⟩
-  ap f (! (gf _)) ∙ ap f (ap g fx=fy ∙ gf _) ≡⟨ {!!} ⟩
-  ap f (! (gf _)) ∙ (ap f (ap g fx=fy) ∙ ap f (gf _)) ≡⟨ {!!} ⟩
-  ! (ap f (gf _)) ∙ (ap f (ap g fx=fy) ∙ ap f (gf _)) ≡⟨ elim-invs g f {!λ b → ap f (gf b)!} fx=fy ⟩
-  -- ap f (! (gf _) ∙ (ap g fx=fy ∙ gf _)) ≡⟨ ap (λ z → ap f (! (gf _) ∙ (ap g z ∙ gf _))) fxy-ap ⟩
-  -- ap f (! (gf _) ∙ (ap g (ap f x=y) ∙ gf _)) ≡⟨ ap (ap f) (elim-invs f g gf x=y) ⟩
-  -- ap f x=y ≡⟨ ! fxy-ap ⟩
-  fx=fy ∎
-  where
-   x=y : x ≡ y
-   x=y = {!!}
-   fxy-ap : fx=fy ≡ ap f x=y
-   fxy-ap = {!!}
+-- elim-invs-2 : ∀ {x y : A} (f : A → B)
+--                 (g : B → A) (gf : (z : A) → g (f z) ≡ z)
+--                 (fx=fy : f x ≡ f y) →
+--               ap f (! (gf x) ∙ (ap g fx=fy ∙ gf y)) ≡ fx=fy
+-- elim-invs-2 {x = x} {y = y} f g gf fx=fy =
+--   ap f (! (gf _) ∙ (ap g fx=fy ∙ gf _)) ≡⟨ {!!} ⟩
+--   ap f (! (gf _)) ∙ ap f (ap g fx=fy ∙ gf _) ≡⟨ {!!} ⟩
+--   ap f (! (gf _)) ∙ (ap f (ap g fx=fy) ∙ ap f (gf _)) ≡⟨ {!!} ⟩
+--   ! (ap f (gf _)) ∙ (ap f (ap g fx=fy) ∙ ap f (gf _)) ≡⟨ elim-invs g f {!λ b → ap f (gf b)!} fx=fy ⟩
+--   -- ap f (! (gf _) ∙ (ap g fx=fy ∙ gf _)) ≡⟨ ap (λ z → ap f (! (gf _) ∙ (ap g z ∙ gf _))) fxy-ap ⟩
+--   -- ap f (! (gf _) ∙ (ap g (ap f x=y) ∙ gf _)) ≡⟨ ap (ap f) (elim-invs f g gf x=y) ⟩
+--   -- ap f x=y ≡⟨ ! fxy-ap ⟩
+--   fx=fy ∎
+--   where
+--    x=y : x ≡ y
+--    x=y = {!!}
+--    fxy-ap : fx=fy ≡ ap f x=y
+--    fxy-ap = {!!}
 
 module _ (f : A → B) where
   equiv-to-surj : is-equiv f → is-surj f
@@ -563,11 +563,186 @@ pair≡d-prop : {l1 l2 : Level} {A : Type l1} {B : A → Type l2}
        → (a , b) ≡ (a' , b') [ Σ B ]
 pair≡d-prop {a = a} (refl _) ip = ap (a ,_) (ip a _ _)
 
-finite-to-set : ∀ (fin-Y : is-finite A) → (x y : A) → is-prop (x ≡ y)
+pair≡d-prop-pr₁ : {l1 l2 : Level} {A : Type l1} {B : A → Type l2}
+         {a a' : A} {p : a ≡ a'}
+         {b : B a} {b' : B a'} {q : ∀ a → is-prop (B a)}
+       → ap pr₁ (pair≡d-prop p {b} {b'} q) ≡ p
+pair≡d-prop-pr₁ {B = B} {a = a} {p = refl _} {b} {b'} {q}
+  = lem (q a b b')
+  where
+  lem : ∀ (w : b ≡ b') → ap pr₁ (ap (_,_ {B = B} a) w) ≡ refl a
+  lem (refl .b) = refl _
+
+
+pair≡d-prop-trunc : {l1 : Level} {A : Type l1} {B : A → Type}
+         {a a' : A} (p : a ≡ a')
+         {b : ∥ B a ∥₋₁} {b' : ∥ B a' ∥₋₁}
+       → (a , b) ≡ (a' , b') [ Σ a ꞉ A , ∥ B a ∥₋₁ ]
+pair≡d-prop-trunc p = pair≡d-prop p (λ _ → trunc)
+
+𝟘-elim-irrel : .𝟘 → A
+𝟘-elim-irrel ()
+
+J : {x : A} (P : (y : A) → x ≡ y → Type)
+    (d : P x (refl x)) {y : A} (p : x ≡ y) → P y p
+J P d (refl _) = d
+
+module _ {A : Type} (_==_ : is-discrete A) where
+  private
+    forget : (x y : A) → .(p : x ≡ y) → x ≡ y
+    forget x y p = case x == y of λ where
+      (inl+ x=y) → x=y
+      (inr+ x≠y) → 𝟘-elim-irrel (x≠y p)
+    -- equalPointsIrr : A → Type
+    -- equalPointsIrr x = Σ y ꞉ A , . (x ≡ y)
+    -- forget : (x y : A) → (p : x ≡ y) → x ≡ y
+    -- forget x y p = case x == y of λ where
+    --   (inl+ x=y) → x=y
+    --   (inr+ x≠y) → x≠y p ↯
+
+    untrunc-eq : (x y : A) → ∥ x ≡ y ∥₋₁ → x ≡ y
+    untrunc-eq x y p = case x == y of λ where
+      (inl+ x=y) → x=y
+      (inr+ x≠y) → untrunc 𝟘-prop x≠y p ↯
+
+    -- The set of all points equal to x
+    equalPoints : A → Type
+    equalPoints x = Σ y ꞉ A , ∥ x ≡ y ∥₋₁
+    equal-contr : (x : A) → is-contr (equalPoints x)
+    equal-contr x .pr₁ = x , ∣ refl _ ∣
+    equal-contr x .pr₂ (y , eq) = pair≡d-prop-trunc (untrunc-eq _ _ eq)
+    eqp-set : ∀ x → is-set (equalPoints x)
+    eqp-set x = contr-to-set (equal-contr x)
+
+    -- contr-discrete : (x y : A) → is-contr (is-decidable (x ≡ y))
+    -- contr-discrete x y .pr₁ = x == y
+    -- contr-discrete x y .pr₂ (inl+ x₁) = {!!}
+    -- contr-discrete x y .pr₂ (inr+ x₁) = {!!}
+
+  discrete-to-set : is-set A
+  discrete-to-set x y p q =
+    p ≡⟨ ! pair≡d-prop-pr₁ ⟩
+    ap pr₁ pp ≡⟨ ap (ap pr₁) (inner-prop pp qq) ⟩
+    ap pr₁ qq ≡⟨ pair≡d-prop-pr₁ ⟩
+    q ∎
+    where
+    inner-prop : is-prop ((x , ∣ refl x ∣) ≡ (y , ∣ p ∣))
+    inner-prop = eqp-set x (x , ∣ refl _ ∣) (y , ∣ p ∣)
+    pp : (x , ∣ refl x ∣) ≡ (y , ∣ p ∣)
+    pp = pair≡d-prop-trunc p
+    qq : (x , ∣ refl x ∣) ≡ (y , ∣ p ∣)
+    qq = pair≡d-prop-trunc q
+    new-equality : pp ≡ qq
+    new-equality = inner-prop pp qq
+  -- discrete-to-set _==_ x y p q = case x == y of λ where
+  --   (inl+ x=y) → {!!}
+  --   (inr+ x≠y) → x≠y p ↯
+  -- discrete-to-set = {!prop-to-set!}
+-- discrete-to-set discr x y p q = {!contr-to-contr-path!}
+
+finite-to-set : ∀ (fin-Y : is-finite A) → is-set A
+-- finite-to-set : ∀ (fin-Y : is-finite A) → (x y : A) → is-prop (x ≡ y)
 finite-to-set = {!!}
 
 image : (f : A → B) → Type
 image {A} {B} f = Σ y ꞉ B , inIm f y
+
+map-to-image : (f : A → B) → A → image f
+map-to-image f a = (f a) , ∣ a , (refl _) ∣
+
+map-to-image-surjective : (f : A → B) → is-surjective (map-to-image f)
+map-to-image-surjective f (b , iim) = iim <&> λ where (a , fa=b) → a , (pair≡d-prop fa=b λ _ → trunc)
+
+image-discrete : (f : A → B) → is-discrete B → is-discrete (image f)
+image-discrete f compare-B (x , xi) (y , yi) = case compare-B x y of λ where
+  (inl+ x=y) → inl+ (pair≡d-prop x=y λ _ → trunc)
+  (inr+ x≠y) → inr+ λ xi=yi → x≠y (ap pr₁ xi=yi)
+
+
+
+discrete-to-finite-fin : ∀ {Y : Type} (n : ℕ) → (fn : Fin n → Y) → is-surjective fn → is-discrete Y → is-finite Y
+discrete-to-finite-fin {Y} zero fn fn-surj y-discr = unit (zero , mkEquiv
+    fin0-elim bwd-fn (λ ())
+    λ y → fin0-elim (bwd-fn y))
+  where
+    bwd-fn :  Y → Fin zero
+    bwd-fn y = fn-surj y [ (λ ()) ]>>= pr₁
+  -- bwd-fn = (λ y → untrunc (λ ()) (λ {(z , zeq) → bwd eq z}) (f-surj y))
+-- discrete-to-finite-fin (suc n) f eq = {!f-surj!}
+discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite y-discr (fn zero) of λ where
+  -- (inl+ 0-inIm) → maptrunc (λ {(x , xeq) → suc n , {!discrete-to-finite-fin n fn' (fn'-surj 0-inIm)!}}) 0-inIm
+  (inl+ 0-inIm) → discrete-to-finite-fin n fn' (fn'-surj 0-inIm) y-discr
+  (inr+ 0-not-inIm) → {!discrete-to-finite-fin n fn-on-image fnoi-surj discr-im!}
+    where
+    y-set : is-set Y
+    y-set = discrete-to-set y-discr
+    -- The ristriction of f where n > 0
+    fn' : Fin n → Y
+    fn' m = fn (suc m)
+    -- f-n' m = f (fwd eq (suc m))
+
+    -- TODO: Prove split Fin + Fin
+
+
+    fn'-surj : inIm fn' (fn zero) → is-surjective fn'
+    fn'-surj 0-inIm y = fn-surj y >>= λ where
+      (zero , meq) → 0-inIm <&> λ where (z , zeq) → z , (zeq ∙ meq)
+      (suc m , meq) → ∣ m , meq ∣
+
+    fn-on-image : Fin n → image fn'
+    fn-on-image = map-to-image fn'
+
+    fnoi-surj : is-surjective fn-on-image
+    fnoi-surj = map-to-image-surjective fn'
+    discr-im : is-discrete (image fn')
+    discr-im = image-discrete fn' y-discr
+    -- → is-finite (image fn')
+
+    image-finite : is-finite (image fn')
+    image-finite = discrete-to-finite-fin n fn-on-image fnoi-surj discr-im
+
+    imAtZero = λ y → (fn zero ≡ y) × ¬ (inIm fn' y)
+    imAt = λ y → inIm fn' y ∔ imAtZero y
+    myIm = Σ imAt
+    -- imAt = λ y → inIm fn' y ∔ (fn zero ≡ y)
+    -- imAt = λ y → inIm fn' y ∔ ((fn zero ≡ y) × ¬ (inIm fn' y))
+
+    imAtZero-prop : ∀ y → is-prop (imAtZero y)
+    imAtZero-prop y = prop-pair (y-set _ y) prop-¬
+
+    imAt-prop : ∀ y → is-prop (imAt y)
+    imAt-prop y = prop-∔-disjoint trunc (imAtZero-prop y) λ where
+      im (_ , ¬im) → ¬im im
+
+    y-to-im'' : (y : Y) → imAt y
+    y-to-im'' y = case q6a fn' fin-finite y-discr y of λ where
+        (inl+ y-inIm) → inl+ y-inIm
+        (inr+ ¬in-im) → inr+ ((fn-surj y [ imAtZero-prop y ]>>= λ where
+          (zero , fn0=y) → fn0=y , ¬in-im
+          (suc n' , n'eq) → (¬in-im ∣ n' , n'eq ∣) ↯))
+
+
+
+    im-discrete : is-discrete myIm
+    im-discrete (x , xi) (y , yi) = case y-discr x y of λ where
+      (inl+ x=y) → inl+ (pair≡d-prop x=y imAt-prop)
+      (inr+ neq) → inr+ (λ where (refl _) → neq (refl _))
+
+    Y≃im : Y ≃ myIm
+    Y≃im = mkEquiv to' fro froTo toFro
+      where
+      to' : Y → myIm
+      to' y = y , y-to-im'' y
+
+      fro : myIm → Y
+      -- fro = pr₁
+      fro (y , _) = y
+
+      toFro : ∀ im → to' (fro im) ≡ im
+      toFro (y , x) = pair≡d-refl (imAt-prop _ _ _)
+
+      froTo : ∀ y → fro (to' y) ≡ y
+      froTo y = refl _
 
 module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjective f) where
 
@@ -575,79 +750,12 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjectiv
   q6b-fwd y-discr = fin-X >>= lem
     where
       y-set : is-set Y
-      y-set = {!!}
-
-      lem1 : ∀ n → (fn : Fin n → Y) → is-surjective fn → ∥ Sigma ℕ (λ n → Fin n ≃ Y) ∥₋₁
-      lem1 zero fn fn-surj = unit (zero , mkEquiv
-        fin0-elim bwd-fn (λ ())
-        λ y → fin0-elim (bwd-fn y))
-        where
-        bwd-fn :  Y → Fin zero
-        bwd-fn y = fn-surj y [ (λ ()) ]>>= pr₁
-        -- bwd-fn = (λ y → untrunc (λ ()) (λ {(z , zeq) → bwd eq z}) (f-surj y))
-      -- lem1 (suc n) f eq = {!f-surj!}
-      lem1 (suc n) fn fn-surj = case q6a fn' fin-finite y-discr (fn zero) of λ where
-        -- (inl+ 0-inIm) → maptrunc (λ {(x , xeq) → suc n , {!lem1 n fn' (fn'-surj 0-inIm)!}}) 0-inIm
-        (inl+ 0-inIm) → lem1 n fn' (fn'-surj 0-inIm)
-        (inr+ 0-not-inIm) → {!lem1 n fn'!}
-          where
-          -- The ristriction of f where n > 0
-          fn' : Fin n → Y
-          fn' m = fn (suc m)
-          -- f-n' m = f (fwd eq (suc m))
-
-          fn'-surj : inIm fn' (fn zero) → is-surjective fn'
-          fn'-surj 0-inIm y = fn-surj y >>= λ where
-            (zero , meq) → 0-inIm <&> λ where (z , zeq) → z , (zeq ∙ meq)
-            (suc m , meq) → ∣ m , meq ∣
-
-          imAtZero = λ y → (fn zero ≡ y) × ¬ (inIm fn' y)
-          imAt = λ y → inIm fn' y ∔ imAtZero y
-          -- imAt = λ y → inIm fn' y ∔ (fn zero ≡ y)
-          -- imAt = λ y → inIm fn' y ∔ ((fn zero ≡ y) × ¬ (inIm fn' y))
-
-          imAtZero-prop : ∀ y → is-prop (imAtZero y)
-          imAtZero-prop y = prop-pair (y-set _ y) prop-¬
-
-          imAt-prop : ∀ y → is-prop (imAt y)
-          imAt-prop y = prop-∔-disjoint trunc (imAtZero-prop y) λ where
-            im (_ , ¬im) → ¬im im
-
-          y-to-im'' : (y : Y) → imAt y
-          y-to-im'' y = case q6a fn' fin-finite y-discr y of λ where
-             (inl+ y-inIm) → inl+ y-inIm
-             (inr+ ¬in-im) → inr+ ((fn-surj y [ imAtZero-prop y ]>>= λ where
-               (zero , fn0=y) → fn0=y , ¬in-im
-               (suc n' , n'eq) → (¬in-im ∣ n' , n'eq ∣) ↯))
+      y-set = discrete-to-set y-discr
 
 
-          myIm = Σ imAt
-
-          im-discrete : is-discrete myIm
-          im-discrete (x , xi) (y , yi) = case y-discr x y of λ where
-            (inl+ x=y) → inl+ (pair≡d-prop x=y imAt-prop)
-            (inr+ neq) → inr+ (λ where (refl _) → neq (refl _))
-
-          Y≃im : Y ≃ myIm
-          Y≃im = mkEquiv to' fro froTo toFro
-            where
-            to' : Y → myIm
-            to' y = y , y-to-im'' y
-
-            fro : myIm → Y
-            -- fro = pr₁
-            fro (y , _) = y
-
-            toFro : ∀ im → to' (fro im) ≡ im
-            toFro (y , x) = pair≡d-refl (imAt-prop _ _ _)
-
-            froTo : ∀ y → fro (to' y) ≡ y
-            froTo y = refl _
-
-
-      -- lem (n , eq) = pr₁ q1b ∣ (n , lem1 n eq) ∣
+      -- lem (n , eq) = pr₁ q1b ∣ (n , discrete-to-finite-fin n eq ?) ∣
       lem : Sigma ℕ (λ n → Fin n ≃ X) → ∥ Sigma ℕ (λ n → Fin n ≃ Y) ∥₋₁
-      lem (n , eq) = lem1 n fn fn-surj
+      lem (n , eq) = discrete-to-finite-fin n fn fn-surj y-discr
         where
           fwd-mp : Fin n → X
           fwd-mp = fwd eq

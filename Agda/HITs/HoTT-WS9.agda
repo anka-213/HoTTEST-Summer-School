@@ -78,13 +78,17 @@ contr-path A = (x y : A) → is-contr (x ≡ y)
 contr-to-contr-path : is-contr A → contr-path A
 -- contr-to-contr-path = const-emb-to-contr-path ∘ contr-to-const-emb
 contr-to-contr-path ctr x y .pr₁ = contr-to-prop ctr x y
-contr-to-contr-path ctr x .x .pr₂ (refl .x) = !-inv-l (pr₂ ctr x)
+-- contr-to-contr-path ctr x .x .pr₂ (refl .x) = !-inv-l (pr₂ ctr x)
+contr-to-contr-path ctr x .x .pr₂ (refl .x) = ?
 
+prop-to-contr-path : is-prop A → contr-path A
+prop-to-contr-path ipA x = contr-to-contr-path (x , ipA x) x
 
 contr-to-set : is-contr A → is-set A
 contr-to-set c x y = contr-to-prop (contr-to-contr-path c x y)
---
--- prop-to-set : is-prop A → is-set A
+
+prop-to-set : is-prop A → is-set A
+prop-to-set ipA x y = contr-to-prop (prop-to-contr-path ipA x y)
 -- prop-to-set x = {!contr-to-contr-path !}
 -- prop-to-set prp = ax-k-to-set (λ x p → {!ap !})
 
@@ -106,14 +110,14 @@ is-k-2-truncated : ℕ → Type → Type
 is-k-2-truncated zero X = is-contr X
 is-k-2-truncated (suc k) X = (x y : X) → is-k-2-truncated k (x ≡ y)
 
--- k+1-truncation : (k : ℕ) → is-k-2-truncated k A → is-k-2-truncated (suc k) A
--- k+1-truncation zero tr x y = contr-to-contr-path tr x y
--- -- k+1-truncation zero tr x y = (pr₁ (pr₁ (fiber-contractible (contr-to-prop tr x y))))
--- --                            , (λ z → ! (pr₂ (pr₁ (some-lem (contr-to-prop tr x y))))
--- --                                   ∙ {!pr₂ (some-lem (contr-to-prop tr x y))!})
--- -- k+1-truncation zero tr x y = (contr-to-prop tr x y) , (λ p → {!pr₂ (some-lem (contr-to-prop tr x y))!})
--- -- k+1-truncation zero tr x y = contr-to-prop tr x y , (λ p → {!!})
--- k+1-truncation (suc k) tr x y p q = k+1-truncation k (tr x y) p q
+k+1-truncation : (k : ℕ) → is-k-2-truncated k A → is-k-2-truncated (suc k) A
+k+1-truncation zero tr x y = contr-to-contr-path tr x y
+-- k+1-truncation zero tr x y = (pr₁ (pr₁ (fiber-contractible (contr-to-prop tr x y))))
+--                            , (λ z → ! (pr₂ (pr₁ (some-lem (contr-to-prop tr x y))))
+--                                   ∙ {!pr₂ (some-lem (contr-to-prop tr x y))!})
+-- k+1-truncation zero tr x y = (contr-to-prop tr x y) , (λ p → {!pr₂ (some-lem (contr-to-prop tr x y))!})
+-- k+1-truncation zero tr x y = contr-to-prop tr x y , (λ p → {!!})
+k+1-truncation (suc k) tr x y p q = k+1-truncation k (tr x y) p q
 
 ex3b : ∀ k → is-prop (is-k-2-truncated k A)
 ex3b zero = ex3
