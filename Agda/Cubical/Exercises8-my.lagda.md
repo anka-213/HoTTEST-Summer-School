@@ -151,7 +151,9 @@ Prove the following lemma charictarising equality in subtypes:
 Σ≡Prop : {A : Type ℓ} {B : A → Type ℓ'} {u v : Σ A B} (h : (x : A) → isProp (B x))
        → (p : pr₁ u ≡ pr₁ v) → u ≡ v
 -- Σ≡Prop {B = B} {u = u} {v = v} h p i = (p i) , h (p i) {!pr₂ u!} {!!} i
-Σ≡Prop {B = B} {u = u} {v = v} h p = ΣPathP (p , toPathP (h _ _ _))
+-- Σ≡Prop {B = B} {u = u} {v = v} h p = ΣPathP (p , toPathP (h _ _ _))
+-- Σ≡Prop h p = ΣPathP (p , toPathP (h _ _ _))
+Σ≡Prop {B = B} h p = ΣPathP (p , isProp→PathP (λ i → h (p i)) _ _)
 ```
 
 ### Exercise 6 (★★★)
@@ -162,16 +164,70 @@ Prove that `isContr` is a proposition:
 This requires drawing a cube (yes, an actual 3D one)!
 
 ```
+variable
+  x y z w : A
+
+Square :
+  {a₀₀ a₀₁ : A} (a₀₋ : a₀₀ ≡ a₀₁)
+  {a₁₀ a₁₁ : A} (a₁₋ : a₁₀ ≡ a₁₁)
+  (a₋₀ : a₀₀ ≡ a₁₀) (a₋₁ : a₀₁ ≡ a₁₁)
+  → Type _
+Square a₀₋ a₁₋ a₋₀ a₋₁ = PathP (λ i → a₋₀ i ≡ a₋₁ i) a₀₋ a₁₋
+
+squareFromContraction : {A : Type ℓ} → isContr A →
+  {a₀₀ a₀₁ : A} (a₀₋ : a₀₀ ≡ a₀₁)
+  {a₁₀ a₁₁ : A} (a₁₋ : a₁₀ ≡ a₁₁)
+  (a₋₀ : a₀₀ ≡ a₁₀) (a₋₁ : a₀₁ ≡ a₁₁)
+  → Square a₀₋ a₁₋ a₋₀ a₋₁
+squareFromContraction (c0 , h0) a₀₋ a₁₋ a₋₀ a₋₁ i j = hcomp
+  (λ { k (i = i0) → h0 (a₀₋ j) k
+     ; k (i = i1) → h0 (a₁₋ j) k
+     ; k (j = i0) → h0 (a₋₀ i) k
+     ; k (j = i1) → h0 (a₋₁ i) k})
+  c0
+
+funExtP : {B : A → I → Type ℓ}
+  {f : (a : A) → B a i0}
+  {g : (a : A) → B a i1}
+  (p : (a : A) → PathP (λ i → B a i) (f a) (g a))
+  → PathP (λ i → (a : A) → B a i) f g
+funExtP p i a = p a i
+
+isPropIsContr' : {A : Type ℓ} → isProp (isContr A)
+isPropIsContr' (c0 , h0) (c1 , h1) = ΣPathP (h0 c1
+  , funExtP (λ a → squareFromContraction (c0 , h0) _ _ _ _))
+-- isPropIsContr' (c0 , h0) (c1 , h1) = ΣPathP ((h0 c1) , {!squareFromContraction (c0 , h0) ? ? ? ?!})
+
+isPropIsContr'' : {A : Type ℓ} → isProp (isContr A)
+isPropIsContr'' (c0 , h0) (c1 , h1) j .pr₁ = h0 c1 j
+isPropIsContr'' (c0 , h0) (c1 , h1) j .pr₂ x =
+  transport (λ k → PathP (λ j → h0 (h0 c1 j) k ≡ h0 x k)
+                         (λ i → h0 (h0 x i) k)
+                         (λ i → h0 (h1 x i) k))
+            refl j
+
+isPropIsContr''' : {A : Type ℓ} → isProp (isContr A)
+isPropIsContr''' (c0 , h0) (c1 , h1) j .pr₁ = h0 c1 j
+isPropIsContr''' (c0 , h0) (c1 , h1) j .pr₂ x =
+  subst (λ f → PathP (λ j → f (h0 c1 j) ≡ f x) (ap f (h0 x)) (ap f (h1 x)))
+        (funExt h0) refl j
+
 isPropIsContr : {A : Type ℓ} → isProp (isContr A)
-isPropIsContr (c0 , h0) (c1 , h1) j = (h0 c1 j) , (λ y i → hcomp
+isPropIsContr (c0 , h0) (c1 , h1) j = (h0 c1 j) , λ y i → hcomp
+  -- (λ where
+  --   k (i = i0) → h0 c1 (j ∧ k)
+  --   k (i = i1) → h0 y k
+  --   k (j = i0) → h0 y (i ∧ k)
+  --   k (j = i1) → h0 (h1 y i) k)
+  -- c0
   (λ where
-    k (i = i0) → h0 c1 (j ∧ k)
-    k (i = i1) → h0 y k
-    k (j = i0) → h0 y (i ∧ k)
-    k (j = i1) → h0 (h1 y i) k)
-  c0)
+    k (i = i0) → h0 c1 j
+    k (i = i1) → h1 y k
+    k (j = i0) → h0 (h1 y k) i
+    k (j = i1) → h1 y (k ∧ i))
+  (h0 c1 (i ∨ j))
 ```
-             y
+             refl
        y  --------->  y
        ∧              ∧
        |              |
@@ -181,6 +237,30 @@ h0 y i |              |  h1 y i
        c0 ----------> c1
             h0 c1 j
 
+            h0 y j
+       c0 --------->  y
+       ∧              ∧
+       |              |
+  refl |              |  h1 y i
+       |              |
+       |              |
+       c0 ----------> c1
+            h0 c1 j
+
+
+             refl
+       c1 --------->  c1
+       ∧              ∧
+       |              |
+h0 c1  |------+       | refl
+       |      |       |
+       |      |       |
+       c0 ----------> c1
+            h0 c1
+
+
+
+Here's a drawing of an alternative solution in quiver: https://tinyurl.com/4bt9r2ve
 https://q.uiver.app/?q=WzAsOCxbMiwyLCJ5Il0sWzQsMiwieSJdLFsyLDQsImNfMCJdLFs0LDQsImMxIl0sWzAsMCwiY18wIl0sWzAsNiwiY18wIl0sWzYsNiwiY18wIl0sWzYsMCwiYzAiXSxbMiwwLCJoMCh5LGkpIiwxXSxbMiwzLCJoXzAoYzEsaikiLDJdLFszLDEsImgxKHksaSkiLDFdLFswLDEsInkiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJzcXVpZ2dseSJ9fX1dLFs0LDAsImhfMCh5LGspIiwxXSxbNSwyLCJrIiwxLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoic3F1aWdnbHkifX19XSxbNiwzLCJoXzAoY18xLGspIiwxXSxbNywxLCJoXzAgXFw7IHkgXFw7IGsiLDFdLFs1LDYsImoiLDEseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJzcXVpZ2dseSJ9fX1dLFs1LDQsImkiLDEseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJzcXVpZ2dseSJ9fX1dLFs0LDcsIiIsMSx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6InNxdWlnZ2x5In19fV0sWzYsNywiIiwxLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoic3F1aWdnbHkifX19XSxbMTYsOSwiaF8wKGMxLGpcXHdlZGdlIGopIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfX1dLFsxOCwxMSwiaF8wIFxcOyB5IFxcOyBrIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfX1dLFsxNyw4LCJoXzAgXFw7IHkgXFw7IChpIFxcd2VkZ2UgaykiLDIseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9fV0sWzE5LDEwLCJoXzAgXFw7IChoXzEgXFw7IHkgXFw7IGkpIFxcOyBrIiwwLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfX1dXQ==
 
 h0 y i = ?10 (j = i0) : A (blocked on _212)
