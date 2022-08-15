@@ -14,7 +14,7 @@ module HoTT-WS10 where
 private
   variable
     ℓ l1 l2 l3 : Level
-    A B C P Q : Type
+    A B C D P Q : Type
 
 -- postulate
 --   ∥_∥₋₁ : Type → Type
@@ -384,6 +384,37 @@ n ^ suc m = n * (n ^ m)
 fin0-elim : {A : Type} → Fin zero → A
 fin0-elim ()
 
+mkEquiv : ∀ {l1 l2 : Level} {A : Type l1} {B : Type l2}
+          (f : A → B)
+          (g : B → A)
+          (fg : (g ∘ f) ∼ id)
+          (gf : (f ∘ g) ∼ id)
+        → A ≃ B
+mkEquiv f g fg gf = improve (Isomorphism f (Inverse g fg gf))
+
+idEquiv : A ≃ A
+idEquiv = improve (Isomorphism id (Inverse id refl refl))
+
+fin-suc≃fin+Unit : ∀ N → Fin (suc N) ≃ (Fin N ∔ Unit)
+-- fin-suc≃fin+Unit n = {!!}
+fin-suc≃fin+Unit N = mkEquiv to' fro froTo toFro
+            where
+            to' : Fin (suc N) → Fin N ∔ Unit
+            to' zero = inr+ ⋆
+            to' (suc m) = inl+ m
+
+            fro : Fin N ∔ Unit → Fin (suc N)
+            fro (inl+ m) = suc m
+            fro (inr+ ⋆) = zero
+
+            toFro : ∀ b → to' (fro b) ≡ b
+            toFro (inl+ m) = refl _
+            toFro (inr+ ⋆) = refl _
+
+            froTo : ∀ s → fro (to' s) ≡ s
+            froTo zero = refl _
+            froTo (suc m) = refl _
+
 -- 5. a)
 fin1≃fin0-to : ∀ n → Fin (n ^ zero) ≃ (Fin zero → Fin n)
 fin1≃fin0-to n =
@@ -397,14 +428,33 @@ fin0≃to-fin0 m = improve (Isomorphism
   refl
   λ x → fin0-elim (x zero)))
 
+fin-mul : (n m : ℕ) → Fin (n * m) ≃ (Fin n × Fin m)
+fin-mul zero m = {!!}
+fin-mul (suc n) m = {!!}
+
+exp-step : ∀ n → (A × (Fin n → A)) ≃ (Fin (suc n) → A)
+exp-step zero = ?
+exp-step (suc n) = ?
+
 -- Goal: Fin (n * n ^ m) ≃ (Fin (suc m) → Fin n)
 -- Have: Fin (n ^ m) ≃ (Fin m → Fin n)
 
 exp-to-func : (n m : ℕ) → Fin (n ^ m) ≃ (Fin m → Fin n)
 exp-to-func n zero = fin1≃fin0-to n
-exp-to-func n (suc m) = {!exp-to-func n m!}
 -- exp-to-func zero (suc m) = fin0≃to-fin0 m
--- exp-to-func (suc n) (suc m) = {!!}
+-- exp-to-func (suc n) (suc m) = {!exp-to-func n (suc m)!}
+--   where
+--     IH : Fin (n * n ^ m) ≃ (Fin (suc m) → Fin n)
+--     IH = exp-to-func n (suc m)
+--     Goal : Fin (suc n ^ m + n * suc n ^ m) ≃ (Fin (suc m) → Fin (suc n))
+--     Goal = {!!}
+
+exp-to-func n (suc m) = Goal
+  where
+    IH : Fin (n ^ m) ≃ (Fin m → Fin n)
+    IH = exp-to-func n m
+    Goal : Fin (n * n ^ m) ≃ (Fin (suc m) → Fin n)
+    Goal = {!!}
 
 {-
 
@@ -438,8 +488,15 @@ prop-𝟘 ()
 prop-¬ : is-prop (¬ A)
 prop-¬ na na' = λ≡ (λ a → prop-𝟘 _ _)
 
+map-∔ : (f : A → B) (g : C → D) → (A ∔ C) → (B ∔ D)
+map-∔ f g (inl+ x) = inl+ (f x)
+map-∔ f g (inr+ x) = inr+ (g x)
+
 is-discrete-Fin : ∀ n → is-discrete (Fin n)
-is-discrete-Fin = {!!}
+is-discrete-Fin .(suc _) zero zero = inl+ (refl zero)
+is-discrete-Fin .(suc _) zero (suc m) = inr+ (λ ())
+is-discrete-Fin .(suc _) (suc n) zero = inr+ (λ ())
+is-discrete-Fin .(suc _) (suc n) (suc m) = map-∔ (ap suc) (λ where neq (refl _) → neq (refl _)) (is-discrete-Fin _ n m)
 
 prop-pair : is-prop P → is-prop Q → is-prop (P × Q)
 prop-pair ipP ipQ x y = pair≡ (ipP _ _) (ipQ _ _)
@@ -465,8 +522,16 @@ prop-dec-prop A x y = prop-dec-prop' ∥ A ∥₋₁ trunc x y
 -- prop-dec-prop A (inr+ nx) (inl+ y) = (nx y) ↯
 -- prop-dec-prop A (inr+ nx) (inr+ ny) = ap inr+ (λ≡ (λ a →  nx a ↯))
 
+-- unap : {l1 l2 : Level} {A : Type l1} {B : Type l2} (f : A → B) {x y : A} → f x ≡ f y → x ≡ y
+-- unap f (refl x) = refl ?
+
+-- un-inl+ :
+
 discr-∔ : is-discrete A → is-discrete B → is-discrete (A ∔ B)
-discr-∔ = {!!}
+discr-∔ _==A_ _==B_ (inl+ x) (inl+ y) = map-∔ (ap inl+) (λ {neq (refl _) → neq (refl _)}) (x ==A y)
+discr-∔ _==A_ _==B_ (inl+ x) (inr+ y) = inr+ λ ()
+discr-∔ _==A_ _==B_ (inr+ x) (inl+ y) = inr+ λ ()
+discr-∔ _==A_ _==B_ (inr+ x) (inr+ y) = map-∔ (ap inr+) (λ {neq (refl _) → neq (refl _)}) (x ==B y)
 
 infix  0 case_return_of_
 infix  0 case_of_
@@ -496,17 +561,6 @@ bwd2 e = is-equiv.pre-inverse (_≃_.is-equivalence e)
 
 fwd-bwd2 : ∀ {l1 l2 : Level} {A : Type l1} {B : Type l2} → (eq : A ≃ B) → (x : B) → fwd eq (bwd2 eq x) ≡ x
 fwd-bwd2 eq x = is-equiv.is-pre-inverse (_≃_.is-equivalence eq) x
-
-mkEquiv : ∀ {l1 l2 : Level} {A : Type l1} {B : Type l2}
-          (f : A → B)
-          (g : B → A)
-          (fg : (g ∘ f) ∼ id)
-          (gf : (f ∘ g) ∼ id)
-        → A ≃ B
-mkEquiv f g fg gf = improve (Isomorphism f (Inverse g fg gf))
-
-idEquiv : A ≃ A
-idEquiv = improve (Isomorphism id (Inverse id refl refl))
 
 fin-finite : ∀ {n} → is-finite (Fin n)
 fin-finite {n} = ∣ n , idEquiv ∣
@@ -553,6 +607,43 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) where
 
   -}
 
+record is-functor (F : Type → Type) : Type₁ where
+  field
+    Fmap : (A → B) → F A → F B
+    Fid : Fmap {A} id ∼ id
+    F∘ : (f : B → C) (g : A → B) → Fmap (f ∘ g) ∼ Fmap f ∘ Fmap g
+
+ap≃ : (F : Type → Type) → is-functor F → A ≃ B → F A ≃ F B
+ap≃ F F-fun (Equivalence map (Inverse post-inverse₁ is-post-inverse₁ pre-inverse₁ is-pre-inverse₁))
+  = Equivalence (Fmap map) (Inverse (Fmap post-inverse₁)
+                (λ x → ! (F∘ post-inverse₁ map x) ∙ (app≡ (ap Fmap (λ≡ (λ x₁ → is-post-inverse₁ x₁))) x ∙ Fid x))
+                (Fmap pre-inverse₁) λ x →
+                  Fmap map (Fmap pre-inverse₁ x) ≡⟨ ! (F∘ _ _ _) ⟩
+                  Fmap (map ∘ pre-inverse₁) x ≡⟨ app≡ (ap Fmap (λ≡ is-pre-inverse₁)) x ⟩
+                  Fmap id x ≡⟨ Fid _ ⟩
+                  id x ∎)
+  where open is-functor F-fun
+
+ap≃-∔ : A ≃ B → C ≃ D → (A ∔ C) ≃ (B ∔ D)
+ap≃-∔
+  (Equivalence map₁ (Inverse post-inverse₁ is-post-inverse₁ pre-inverse₁ is-pre-inverse₁))
+  (Equivalence map₂ (Inverse post-inverse₂ is-post-inverse₂ pre-inverse₂ is-pre-inverse₂))
+  = Equivalence (map-∔ map₁ map₂)
+       (Inverse (map-∔ post-inverse₁ post-inverse₂)
+                (λ where
+                  (inl+ x) → ap inl+ (is-post-inverse₁ _)
+                  (inr+ x) → ap inr+ (is-post-inverse₂ _))
+                (map-∔ pre-inverse₁ pre-inverse₂)
+                (λ where
+                  (inl+ x) → ap inl+ (is-pre-inverse₁ _)
+                  (inr+ x) → ap inr+ (is-pre-inverse₂ _)))
+
+_∙≃_ : A ≃ B → B ≃ C → A ≃ C
+Equivalence map₁ (Inverse post-inverse₁ is-post-inverse₁ pre-inverse₁ is-pre-inverse₁)
+  ∙≃ Equivalence map₂ (Inverse post-inverse₂ is-post-inverse₂ pre-inverse₂ is-pre-inverse₂)
+  = Equivalence (map₂ ∘ map₁)
+    (Inverse (post-inverse₁ ∘ post-inverse₂) (λ x → ap post-inverse₁ (is-post-inverse₂ (map₁ x)) ∙ is-post-inverse₁ x)
+             (pre-inverse₁ ∘ pre-inverse₂) (λ x → ap map₂ (is-pre-inverse₁ (pre-inverse₂ x)) ∙ is-pre-inverse₂ x))
 
 pair≡d-refl : {l1 l2 : Level} {A : Type l1} {B : A → Type l2}
          {a : A}
@@ -700,9 +791,9 @@ module _ {A : Type} (_==_ : is-discrete A) where
   -- discrete-to-set = {!prop-to-set!}
 -- discrete-to-set discr x y p q = {!contr-to-contr-path!}
 
-finite-to-set : ∀ (fin-Y : is-finite A) → is-set A
--- finite-to-set : ∀ (fin-Y : is-finite A) → (x y : A) → is-prop (x ≡ y)
-finite-to-set = {!!}
+-- finite-to-set : ∀ (fin-Y : is-finite A) → is-set A
+-- -- finite-to-set : ∀ (fin-Y : is-finite A) → (x y : A) → is-prop (x ≡ y)
+-- finite-to-set = {!!}
 
 image : (f : A → B) → Type
 image {A} {B} f = Σ y ꞉ B , inIm f y
@@ -744,7 +835,9 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr with q6a (fn ∘ suc) fin-
       fn'-surj 0-inIm y = fn-surj y >>= λ where
         (zero , meq) → 0-inIm <&> λ where (z , zeq) → z , (zeq ∙ meq)
         (suc m , meq) → ∣ m , meq ∣
-... | (inr+ 0-not-inIm) = {!discrete-to-finite-fin n fn-on-image fnoi-surj discr-im!}
+... | (inr+ 0-not-inIm) = discrete-to-finite-fin n fn-on-image fnoi-surj discr-im <&> λ where
+        -- (n , fin-n≃image-fn') → suc n , ((fin-suc≃fin+Unit n ∙≃ ap≃ (_∔ Unit) {!!} fin-n≃image-fn') ∙≃ im'≃Y)
+        (n , fin-n≃image-fn') → suc n , ((fin-suc≃fin+Unit n ∙≃ ap≃-∔ fin-n≃image-fn' idEquiv) ∙≃ im'≃Y)
     where
     y-set : is-set Y
     y-set = discrete-to-set y-discr
@@ -813,8 +906,8 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr with q6a (fn ∘ suc) fin-
       (inl+ x=y) → inl+ (pair≡d-prop x=y imAt-prop)
       (inr+ neq) → inr+ (λ where (refl _) → neq (refl _))
 
-    Y≃im : Y ≃ myIm
-    Y≃im = mkEquiv to' fro froTo toFro
+    im≃Y : myIm ≃ Y
+    im≃Y = mkEquiv fro to' toFro froTo
       where
       to' : Y → myIm
       to' y = y , y-to-im'' y
@@ -830,7 +923,8 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr with q6a (fn ∘ suc) fin-
       froTo y = refl _
 
     -- This is the version from the solutions
-    myIm' = Σ (inIm fn') ∔ Unit
+    myIm' = image fn' ∔ Unit
+    -- myIm' = Σ (inIm fn') ∔ Unit
 
     im'-discrete : is-discrete myIm'
     im'-discrete = discr-∔
@@ -841,8 +935,8 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr with q6a (fn ∘ suc) fin-
          )
       λ x y → inl+ (refl _)
 
-    Y≃im' : Y ≃ myIm'
-    Y≃im' = mkEquiv to' fro froTo toFro
+    im'≃Y : myIm' ≃ Y
+    im'≃Y = mkEquiv fro to' toFro froTo
       where
       to' : Y → myIm'
       to' y with q6a fn' fin-finite y-discr y
@@ -969,10 +1063,12 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjectiv
 
           Y≃im = mkEquiv to' fro froTo toFro
             where
-            to' : Y → myIm
+            F = Fin (suc n)
+            T = Fin n ∔ Unit
+            to' : F → T
             to' = ?
 
-            fro : myIm → Y
+            fro : T → F
             fro = ?
 
             toFro : ∀ b → to' (fro b) ≡ b
