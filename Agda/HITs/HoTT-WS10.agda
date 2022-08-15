@@ -465,6 +465,9 @@ prop-dec-prop A x y = prop-dec-prop' ∥ A ∥₋₁ trunc x y
 -- prop-dec-prop A (inr+ nx) (inl+ y) = (nx y) ↯
 -- prop-dec-prop A (inr+ nx) (inr+ ny) = ap inr+ (λ≡ (λ a →  nx a ↯))
 
+discr-∔ : is-discrete A → is-discrete B → is-discrete (A ∔ B)
+discr-∔ = {!!}
+
 infix  0 case_return_of_
 infix  0 case_of_
 
@@ -726,10 +729,22 @@ discrete-to-finite-fin {Y} zero fn fn-surj y-discr = unit (zero , mkEquiv
     bwd-fn y = fn-surj y [ (λ ()) ]>>= pr₁
   -- bwd-fn = (λ y → untrunc (λ ()) (λ {(z , zeq) → bwd eq z}) (f-surj y))
 -- discrete-to-finite-fin (suc n) f eq = {!f-surj!}
-discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite y-discr (fn zero) of λ where
+-- discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite y-discr (fn zero) of λ where
+--   -- (inl+ 0-inIm) → maptrunc (λ {(x , xeq) → suc n , {!discrete-to-finite-fin n fn' (fn'-surj 0-inIm)!}}) 0-inIm
+--   (inl+ 0-inIm) → discrete-to-finite-fin n fn' (fn'-surj 0-inIm) y-discr
+--   (inr+ 0-not-inIm) → {!discrete-to-finite-fin n fn-on-image fnoi-surj discr-im!}
+discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr with q6a (fn ∘ suc) fin-finite y-discr (fn zero)
   -- (inl+ 0-inIm) → maptrunc (λ {(x , xeq) → suc n , {!discrete-to-finite-fin n fn' (fn'-surj 0-inIm)!}}) 0-inIm
-  (inl+ 0-inIm) → discrete-to-finite-fin n fn' (fn'-surj 0-inIm) y-discr
-  (inr+ 0-not-inIm) → {!discrete-to-finite-fin n fn-on-image fnoi-surj discr-im!}
+... | (inl+ 0-inIm) = discrete-to-finite-fin n fn' (fn'-surj 0-inIm) y-discr
+    where
+      -- The ristriction of f where n > 0
+      fn' : Fin n → Y
+      fn' m = fn (suc m)
+      fn'-surj : inIm fn' (fn zero) → is-surjective fn'
+      fn'-surj 0-inIm y = fn-surj y >>= λ where
+        (zero , meq) → 0-inIm <&> λ where (z , zeq) → z , (zeq ∙ meq)
+        (suc m , meq) → ∣ m , meq ∣
+... | (inr+ 0-not-inIm) = {!discrete-to-finite-fin n fn-on-image fnoi-surj discr-im!}
     where
     y-set : is-set Y
     y-set = discrete-to-set y-discr
@@ -741,10 +756,6 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite 
     -- TODO: Prove split Fin + Fin
 
 
-    fn'-surj : inIm fn' (fn zero) → is-surjective fn'
-    fn'-surj 0-inIm y = fn-surj y >>= λ where
-      (zero , meq) → 0-inIm <&> λ where (z , zeq) → z , (zeq ∙ meq)
-      (suc m , meq) → ∣ m , meq ∣
 
     fn-on-image : Fin n → image fn'
     fn-on-image = map-to-image fn'
@@ -758,6 +769,7 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite 
     image-finite : is-finite (image fn')
     image-finite = discrete-to-finite-fin n fn-on-image fnoi-surj discr-im
 
+    -- This is my alternative definition that was easier to show (without with-abstraction)
     imAtZero = λ y → (fn zero ≡ y) × ¬ (inIm fn' y)
     imAt = λ y → inIm fn' y ∔ imAtZero y
     myIm = Σ imAt
@@ -771,6 +783,7 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite 
     imAt-prop y = prop-∔-disjoint trunc (imAtZero-prop y) λ where
       im (_ , ¬im) → ¬im im
 
+
     y-to-im'' : (y : Y) → imAt y
     y-to-im'' y = case q6a fn' fin-finite y-discr y of λ where
         (inl+ y-inIm) → inl+ y-inIm
@@ -778,7 +791,22 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite 
           (zero , fn0=y) → fn0=y , ¬in-im
           (suc n' , n'eq) → (¬in-im ∣ n' , n'eq ∣) ↯))
 
+    y-to-im''' : (y : Y) → imAt y
+    y-to-im''' y with q6a fn' fin-finite y-discr y
+    ...  | (inl+ y-inIm) = inl+ y-inIm
+    ...  | (inr+ ¬in-im) = inr+ ((fn-surj y [ imAtZero-prop y ]>>= λ where
+          (zero , fn0=y) → fn0=y , ¬in-im
+          (suc n' , n'eq) → (¬in-im ∣ n' , n'eq ∣) ↯))
 
+    -- both-eq : (y : Y) → y-to-im'' y ≡ y-to-im''' y
+    -- both-eq y with q6a fn' fin-finite y-discr y
+    -- ...  | (inl+ y-inIm) = {!!}
+    -- ...  | (inr+ ¬in-im) = {!!}
+
+    -- both-eq' : (y : Y) → y-to-im'' y ≡ y-to-im''' y
+    -- both-eq' y = case q6a fn' fin-finite y-discr y of λ where
+    --        (inl+ y-inIm) → {!!}
+    --        (inr+ ¬in-im) → {!!}
 
     im-discrete : is-discrete myIm
     im-discrete (x , xi) (y , yi) = case y-discr x y of λ where
@@ -800,6 +828,58 @@ discrete-to-finite-fin {Y} (suc n) fn fn-surj y-discr = case q6a fn' fin-finite 
 
       froTo : ∀ y → fro (to' y) ≡ y
       froTo y = refl _
+
+    -- This is the version from the solutions
+    myIm' = Σ (inIm fn') ∔ Unit
+
+    im'-discrete : is-discrete myIm'
+    im'-discrete = discr-∔
+      (λ where
+        (x , xeq) (y , yeq) → case y-discr x y of λ where
+          (inl+ x=y) → inl+ (pair≡d-prop-trunc x=y)
+          (inr+ neq) → inr+ (λ where (refl _) → neq (refl _))
+         )
+      λ x y → inl+ (refl _)
+
+    Y≃im' : Y ≃ myIm'
+    Y≃im' = mkEquiv to' fro froTo toFro
+      where
+      to' : Y → myIm'
+      to' y with q6a fn' fin-finite y-discr y
+      ...  | (inl+ y-inIm) = inl+ (y , y-inIm)
+      ...  | (inr+ ¬in-im) = inr+ ⋆
+      -- y , y-to-im'' y
+
+      fro : myIm' → Y
+      fro (inl+ (y , y-inIm)) = y
+      fro (inr+ ⋆) = fn zero
+      -- fro y with q6a fn' fin-finite y-discr y
+      -- ...  | (inl+ y-inIm) = ?
+      -- ...  | (inr+ ¬in-im) = ?
+      -- fro (y , _) = y
+
+      toFro : ∀ im → to' (fro im) ≡ im
+      toFro (inl+ (y , y-inIm)) with q6a fn' fin-finite y-discr y
+      ...  | (inl+ y-inIm) = ap inl+ (pair≡d-prop-trunc (refl _))
+      ...  | (inr+ ¬in-im) = ¬in-im y-inIm ↯
+      toFro (inr+ ⋆) with q6a fn' fin-finite y-discr (fn zero)
+      ...  | (inl+ 0-inIm) = 0-not-inIm 0-inIm ↯
+      ...  | (inr+ ¬in-im) = refl _
+
+      -- = {!!} -- 0-not-inIm {!!} ↯
+      -- toFro y with q6a fn' fin-finite y-discr y
+      -- ...  | (inl+ y-inIm) = ?
+      -- ...  | (inr+ ¬in-im) = ?
+      -- toFro (y , x) = pair≡d-refl (imAt-prop _ _ _)
+
+      froTo : ∀ y → fro (to' y) ≡ y
+      -- froTo y = {!!}
+      froTo y with q6a fn' fin-finite y-discr y
+      ...  | (inl+ y-inIm) = refl _
+      ...  | (inr+ ¬in-im) = (fn-surj y [ y-set (fn zero) y ]>>= λ where
+          (zero , fn0=y) → fn0=y -- fn0=y , ¬in-im
+          (suc n' , n'eq) → (¬in-im ∣ n' , n'eq ∣) ↯
+               )
 
 module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjective f) where
 
@@ -875,7 +955,13 @@ module _ {X Y : Type} (f : X → Y) (fin-X : is-finite X) (f-surj : is-surjectiv
       yn = bwd2 eqv y
 
   q6b-bwd : is-finite Y → is-discrete Y
-  q6b-bwd fin-Y x y = untrunc (prop-dec-prop' (x ≡ y) (finite-to-set fin-Y x y)) (q6b-bwd' x y) fin-Y
+  -- q6b-bwd fin-Y x y = untrunc (prop-dec-prop' (x ≡ y) (finite-to-set fin-Y x y)) (q6b-bwd' x y) fin-Y
+  q6b-bwd fin-Y x y = untrunc (prop-dec-prop' (x ≡ y) (Y-set x y)) (q6b-bwd' x y) fin-Y
+    where
+      Y-set : is-set Y
+      Y-set = fin-Y [ {!is-prop-is-set!} ]>>= λ where
+        fin → {!(q6b-bwd' x y)!}
+        --  fin-Y
 
 {-
  ∥ A ∥₋₁
