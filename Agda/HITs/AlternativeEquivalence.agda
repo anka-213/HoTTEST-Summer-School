@@ -7,7 +7,7 @@ open import Lecture5-notes
 open import Lecture4-notes
 open import HoTT-WS9
 
-module RandomLemmas where
+module AlternativeEquivalence where
 
 private
   variable
