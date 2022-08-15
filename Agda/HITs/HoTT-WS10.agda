@@ -583,16 +583,74 @@ pair≡d-prop-trunc p = pair≡d-prop p (λ _ → trunc)
 𝟘-elim-irrel : .𝟘 → A
 𝟘-elim-irrel ()
 
+
 J : {x : A} (P : (y : A) → x ≡ y → Type)
     (d : P x (refl x)) {y : A} (p : x ≡ y) → P y p
 J P d (refl _) = d
 
 module _ {A : Type} (_==_ : is-discrete A) where
+  ¬¬ = λ x → ¬ (¬ x)
+  dneg : B → ¬¬ B
+  dneg = λ z z₁ → z₁ z
   private
+    -- Thanks to decidable equality, we can remove truncation
+    untrunc-eq-dneg : (x y : A) → ¬¬ (x ≡ y) → x ≡ y
+    untrunc-eq-dneg x y p = case x == y of λ where
+      (inl+ x=y) → x=y
+      (inr+ x≠y) → p x≠y ↯ -- untrunc 𝟘-prop x≠y p ↯
+
+    -- The set of all points equal to x
+    equalPoints-dneg : A → Type
+    equalPoints-dneg x = Σ y ꞉ A , ¬¬ (x ≡ y)
+    -- is contractible, thanks to the truncation
+    equal-contr-dneg : (x : A) → is-contr (equalPoints-dneg x)
+    equal-contr-dneg x .pr₁ = x , dneg (refl _)
+    equal-contr-dneg x .pr₂ (y , eq) = pair≡d-prop (untrunc-eq-dneg _ _ eq) λ _ → prop-¬
+    -- Which means it's also a set
+    eqp-set-dneg : ∀ x → is-set (equalPoints-dneg x)
+    eqp-set-dneg x = contr-to-set (equal-contr-dneg x)
+
+  discrete-to-set-dneg : is-set A
+  discrete-to-set-dneg x y p q =
+    p ≡⟨ ! pair≡d-prop-pr₁ ⟩
+    ap pr₁ pp ≡⟨ ap (ap pr₁) (inner-prop pp qq) ⟩
+    ap pr₁ qq ≡⟨ pair≡d-prop-pr₁ ⟩
+    q ∎
+    where
+    xx = x , dneg ( refl x )
+    yy = y , dneg p
+    inner-prop : is-prop (xx ≡ yy)
+    inner-prop = eqp-set-dneg x xx yy
+    pp qq : xx ≡ yy
+    pp = pair≡d-prop p λ _ → prop-¬
+    qq = pair≡d-prop q λ _ → prop-¬
+    new-equality : pp ≡ qq
+    new-equality = inner-prop pp qq
+
+  private
+
+    record EqualPointsIrr (a : A) : Type where
+      constructor _#_
+      field
+        elem         : A
+        .certificate : a ≡ elem
+
     forget : (x y : A) → .(p : x ≡ y) → x ≡ y
     forget x y p = case x == y of λ where
       (inl+ x=y) → x=y
       (inr+ x≠y) → 𝟘-elim-irrel (x≠y p)
+    equal-contr-irr : (x : A) → is-contr (EqualPointsIrr x)
+    equal-contr-irr x .pr₁ = x # refl _
+    equal-contr-irr x .pr₂ (y # eq) = case (forget x y eq) of λ where
+      (refl .x) → refl _
+    eqp-set-irr : ∀ x → is-set (EqualPointsIrr x)
+    eqp-set-irr x = contr-to-set (equal-contr-irr x)
+  discrete-to-set-irr : is-set A
+  discrete-to-set-irr x y p q = {!!}
+    where
+      help : is-prop ((x # _) ≡ (y # _))
+      help = eqp-set-irr x (x # refl _) (y # p)
+    -- equal-contr-irr x .pr₂ (y # eq) = ap (_# eq) (forget x y eq)
     -- equalPointsIrr : A → Type
     -- equalPointsIrr x = Σ y ꞉ A , . (x ≡ y)
     -- forget : (x y : A) → (p : x ≡ y) → x ≡ y
@@ -600,6 +658,8 @@ module _ {A : Type} (_==_ : is-discrete A) where
     --   (inl+ x=y) → x=y
     --   (inr+ x≠y) → x≠y p ↯
 
+  private
+    -- Thanks to decidable equality, we can remove truncation
     untrunc-eq : (x y : A) → ∥ x ≡ y ∥₋₁ → x ≡ y
     untrunc-eq x y p = case x == y of λ where
       (inl+ x=y) → x=y
@@ -608,16 +668,13 @@ module _ {A : Type} (_==_ : is-discrete A) where
     -- The set of all points equal to x
     equalPoints : A → Type
     equalPoints x = Σ y ꞉ A , ∥ x ≡ y ∥₋₁
+    -- is contractible, thanks to the truncation
     equal-contr : (x : A) → is-contr (equalPoints x)
     equal-contr x .pr₁ = x , ∣ refl _ ∣
     equal-contr x .pr₂ (y , eq) = pair≡d-prop-trunc (untrunc-eq _ _ eq)
+    -- Which means it's also a set
     eqp-set : ∀ x → is-set (equalPoints x)
     eqp-set x = contr-to-set (equal-contr x)
-
-    -- contr-discrete : (x y : A) → is-contr (is-decidable (x ≡ y))
-    -- contr-discrete x y .pr₁ = x == y
-    -- contr-discrete x y .pr₂ (inl+ x₁) = {!!}
-    -- contr-discrete x y .pr₂ (inr+ x₁) = {!!}
 
   discrete-to-set : is-set A
   discrete-to-set x y p q =
