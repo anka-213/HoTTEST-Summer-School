@@ -9,6 +9,7 @@ open import Lecture4-notes
 open import HoTT-WS9
 open import RandomLemmas
 open import AlternativeEquivalence
+open import StuffFromBook
 
 module HoTT-WS10 where
 

@@ -130,7 +130,7 @@ PathOver-Π {A = A} {B} {p = p} {f1 = f1} {f2} h =
       ((transport-Π p) ∙ λ≡  \ a →
        bwd (transport-to-pathover B (pair≡d p (fill-left p a)) _ _) (h _))
 
-PathOver-path-to : ∀ {A : Type}
+PathOver-path-to : ∀ {ℓ} {A : Type ℓ}
                        {a0 a a' : A} {p : a ≡ a'}
                        {q : a0 ≡ a}
                        {r : a0 ≡ a'}

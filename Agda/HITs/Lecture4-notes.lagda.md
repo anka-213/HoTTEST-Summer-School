@@ -5,6 +5,11 @@
 open import new-prelude
 
 module Lecture4-notes where
+
+private
+  variable
+   ℓ : Level
+   A : Type ℓ
 ```
 
 # The circle
@@ -66,20 +71,20 @@ concatenation is associative, and the inverse of a path composed with
 that path is the identity.  Let's state and prove them.  
 
 ```agda
-∙unit-r : {A : Type} {x y : A} → (p : x ≡ y) → (p ∙ refl _) ≡ p
+∙unit-r :  {x y : A} → (p : x ≡ y) → (p ∙ refl _) ≡ p
 ∙unit-r p = refl _
 
-∙unit-l : {A : Type} {x y : A} → (p : x ≡ y) → (refl _ ∙ p) ≡ p
+∙unit-l :  {x y : A} → (p : x ≡ y) → (refl _ ∙ p) ≡ p
 ∙unit-l (refl _) = refl _
 
-∙assoc : {A : Type} {x y z w : A} (p : x ≡ y) (q : y ≡ z) (r : z ≡ w)
+∙assoc :  {x y z w : A} (p : x ≡ y) (q : y ≡ z) (r : z ≡ w)
         → p ∙ (q ∙ r) ≡ (p ∙ q) ∙ r
 ∙assoc p (refl _) (refl _) = (refl _)
 
-!-inv-l : {A : Type} {x y : A} → (p : x ≡ y) → (! p ∙ p) ≡ refl _
+!-inv-l :  {x y : A} → (p : x ≡ y) → (! p ∙ p) ≡ refl _
 !-inv-l (refl _) = refl _
 
-!-inv-r : {A : Type} {x y : A} → (p : x ≡ y) → (p ∙ ! p) ≡ refl _
+!-inv-r :  {x y : A} → (p : x ≡ y) → (p ∙ ! p) ≡ refl _
 !-inv-r (refl _) = refl _
 ```
 

@@ -11,6 +11,7 @@ open import HoTT-WS10 hiding (_↔_ ; is-decidable ; _>>=_)
 open import RandomLemmas
 open import AlternativeEquivalence
 open import UnivalenceLecture
+open import StuffFromBook
 
 module HoTT-WS11 where
 
@@ -329,6 +330,6 @@ module _ (A : Type) (P : A → Type) (a : A) where
        foo : is-contr (Σ b ꞉ A , p b)
        foo = {!!}
        bar : isRep p ≃ isRep' p
-       bar = ?
+       bar = {!!}
        -- ≃ Σ b ꞉ A , p b
        -- ≃ 𝟙
