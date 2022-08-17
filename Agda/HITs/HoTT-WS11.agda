@@ -125,11 +125,18 @@ bindtrunc' = untrunc' trunc'
 _>>=_ : {A B : Type ℓ} → ∥ A ∥'₋₁ → (A → ∥ B ∥'₋₁) → ∥ B ∥'₋₁
 m >>= f = bindtrunc' f m
 
+liftA2 : {A B C : Type ℓ} → (A → B → C) →  ∥ A ∥'₋₁ → ∥ B ∥'₋₁ → ∥ C ∥'₋₁
+liftA2 f pa pb = do
+  a ← pa
+  b ← pb
+  ∣ f a b ∣'
+
 q2b-1 : ∥ A ≡ B ∥'₋₁ → ∥ B ≡ C ∥'₋₁ → ∥ A ≡ C ∥'₋₁
-q2b-1 pp pq = do
-  p ← pp
-  q ← pq
-  ∣ p ∙ q ∣'
+q2b-1 = liftA2 _∙_
+-- q2b-1 pp pq = do
+--   p ← pp
+--   q ← pq
+--   ∣ p ∙ q ∣'
 
 -- q2b-1 p q = untrunc'' trunc' p λ where
 --     pp → untrunc'' trunc' q λ where
@@ -157,24 +164,29 @@ for any q : ∥A = X∥, we have that
 p∗(q) = q · |p| : ∥A = Y ∥ .
 -}
 
-_∙∣_ : (p : ∥ A ≡ C ∥'₋₁) → (q : ∥ A ≡ C ∥'₋₁) → ∥ A ≡ C ∥'₋₁
-_∙∣_ = {!!}
+_∙∣_ : (p : ∥ A ≡ B ∥'₋₁) → (q : ∥ B ≡ C ∥'₋₁) → ∥ A ≡ C ∥'₋₁
+_∙∣_ = q2b-1
 
 module _ {X Y A B : Type}  where
   private
+    myFamR : Type lzero → Type (lsuc lzero)
+    myFamR X = A ≡ X
     myFam : Type lzero → Type (lsuc lzero)
     myFam X = ∥ A ≡ X ∥'₋₁
 
+  module _ where
+    open q2a {A = X} {Y} myFamR
+
+    -- in the family myFam, a path p : X ≡ Y acts by post-composition
+    recall : (p : X ≡ Y) → (q : A ≡ X) → map (p *) q ≡ q ∙ p
+    recall p q = {!!}
+    -- recall (refl .X) (refl .X) = {!map (refl X *) ∣ refl X ∣' ≡ ∣ refl X ∣'
+
   open q2a {A = X} {Y} myFam
 
-  -- in the family myFam, a path p : X ≡ Y acts by post-composition
-  recall : (p : X ≡ Y) → (q : A ≡ X) → map (p *) ∣ q ∣' ≡ ∣ q ∙ p ∣'
-  recall p q = {!!}
-  -- recall (refl .X) (refl .X) = {!map (refl X *) ∣ refl X ∣' ≡ ∣ refl X ∣'
 
-
-  -- q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → (map (p *) q) ≡ (q ∙∣ ∣ p ∣')
-  -- q2c = ?
+  q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → (map (p *) q) ≡ (q ∙∣ ∣ p ∣')
+  q2c = {!!}
 
 -- q3-1
 
