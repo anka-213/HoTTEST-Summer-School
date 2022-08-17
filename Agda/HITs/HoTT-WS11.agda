@@ -131,6 +131,15 @@ liftA2 f pa pb = do
   b ← pb
   ∣ f a b ∣'
 
+_<*>_ : {A B : Type ℓ} → ∥ (A → B) ∥'₋₁ → ∥ A ∥'₋₁ → ∥ B ∥'₋₁
+pf <*> pa = do
+  f ← pf
+  a ← pa
+  ∣ f a ∣'
+
+pure : {A : Type ℓ} → A → ∥ A ∥'₋₁
+pure = ∣_∣'
+
 q2b-1 : ∥ A ≡ B ∥'₋₁ → ∥ B ≡ C ∥'₋₁ → ∥ A ≡ C ∥'₋₁
 q2b-1 = liftA2 _∙_
 -- q2b-1 pp pq = do
@@ -185,7 +194,8 @@ module _ {X Y A B : Type}  where
   open q2a {A = X} {Y} myFam
 
 
-  q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → (map (p *) q) ≡ (q ∙∣ ∣ p ∣')
+  -- q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → map (p *) q ≡ (q ∙∣ ∣ p ∣')
+  q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → map (p *) q ≡ (| q ∙ ∣ p ∣' |)
   q2c = {!!}
 
 -- q3-1
