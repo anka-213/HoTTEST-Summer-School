@@ -10,13 +10,18 @@ open import Lecture4-notes
 module HoTT-WS9 where
 
 private
+  variable
+    ℓ l1 l2 l3 : Level
+
+private
   variable A B C : Type
+  variable Al Bl Cl : Type ℓ
 
 data _∔_ (A B : Type) : Type where
  inl+ : A → A ∔ B
  inr+ : B → A ∔ B
 
-infixr 20 _∔_
+infixr 1 _∔_
 
 
 is-emb : (f : A → B) → Type
@@ -61,7 +66,7 @@ ex1b = improve (Isomorphism
 ex2 : {B : A → Type} → (∀ (x : A) → is-prop (B x)) → is-prop ((x : A) → B x)
 ex2 allProp f g = λ≡ (λ x → allProp x (f x) (g x))
 
-contr-to-prop : is-contr A → is-prop A
+contr-to-prop : is-contr Al → is-prop Al
 contr-to-prop (a , pa) x y = ! (pa x) ∙ pa y
 
 prop-to-contr : is-prop A → A → is-contr A
@@ -72,14 +77,14 @@ ex2b allContr  = (λ x → pr₁ (allContr x)) , ex2 (λ x → contr-to-prop (al
 
 -- 3. Show is-contr is a prop
 
-contr-path : Type → Type
+contr-path : Type ℓ → Type ℓ
 contr-path A = (x y : A) → is-contr (x ≡ y)
 
-contr-to-contr-path : is-contr A → contr-path A
+contr-to-contr-path : is-contr Al → contr-path Al
 -- contr-to-contr-path = const-emb-to-contr-path ∘ contr-to-const-emb
 contr-to-contr-path ctr x y .pr₁ = contr-to-prop ctr x y
 -- contr-to-contr-path ctr x .x .pr₂ (refl .x) = !-inv-l (pr₂ ctr x)
-contr-to-contr-path ctr x .x .pr₂ (refl .x) = ?
+contr-to-contr-path ctr x .x .pr₂ (refl .x) = {!!}
 
 prop-to-contr-path : is-prop A → contr-path A
 prop-to-contr-path ipA x = contr-to-contr-path (x , ipA x) x
@@ -105,12 +110,11 @@ ex3 (a , pa) (b , pb) = pair≡d (pa b) (fwd (transport-to-pathover _ _ _ _)
 -- ex3 (a , pa) (b , pb) = Σ≡ (pa b) {!ex3-lem pa pb (pa b)!}
 -- ex3 (a , pa) (b , pb) = Σ≡ (pa b) (fwd (transport-to-pathover _ _ _ _) (λ≡ (λ a' → {!!})))
 
-
-is-k-2-truncated : ℕ → Type → Type
+is-k-2-truncated : ℕ → Type ℓ → Type ℓ
 is-k-2-truncated zero X = is-contr X
 is-k-2-truncated (suc k) X = (x y : X) → is-k-2-truncated k (x ≡ y)
 
-k+1-truncation : (k : ℕ) → is-k-2-truncated k A → is-k-2-truncated (suc k) A
+k+1-truncation : {A : Type ℓ} (k : ℕ) → is-k-2-truncated k A → is-k-2-truncated (suc k) A
 k+1-truncation zero tr x y = contr-to-contr-path tr x y
 -- k+1-truncation zero tr x y = (pr₁ (pr₁ (fiber-contractible (contr-to-prop tr x y))))
 --                            , (λ z → ! (pr₂ (pr₁ (some-lem (contr-to-prop tr x y))))

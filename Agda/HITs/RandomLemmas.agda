@@ -100,3 +100,20 @@ ap≃-×
       (map-× pre-inverse₁ pre-inverse₂)
       (λ x → ap₂ _,_ (is-pre-inverse₁ _) (is-pre-inverse₂ _))
     )
+
+
+mkEquiv : ∀ {l1 l2 : Level} {A : Type l1} {B : Type l2}
+          (f : A → B)
+          (g : B → A)
+          (fg : (g ∘ f) ∼ id)
+          (gf : (f ∘ g) ∼ id)
+        → A ≃ B
+mkEquiv f g fg gf = improve (Isomorphism f (Inverse g fg gf))
+
+mkIso : ∀ {l1 l2 : Level} {A : Type l1} {B : Type l2}
+          (f : A → B)
+          (g : B → A)
+          (fg : (g ∘ f) ∼ id)
+          (gf : (f ∘ g) ∼ id)
+        → A ≅ B
+mkIso f g fg gf = Isomorphism f (Inverse g fg gf)
