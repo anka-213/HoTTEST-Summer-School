@@ -10,6 +10,7 @@ open import HoTT-WS9 hiding (is-emb ; _∔_)
 open import HoTT-WS10 hiding (_↔_ ; is-decidable)
 open import RandomLemmas
 open import AlternativeEquivalence
+open import StuffFromBook
 
 module UnivalenceLecture where
 
@@ -32,13 +33,16 @@ module _ {l1 l2 : Level} {A : Type l1} {B : Type l2} where
 equiv-eq : (A ≡ B) → (A ≃ B)
 equiv-eq (refl _) = idEquiv
 
-module _ {A B : Type ℓ} where
-  Univalence = is-equiv (equiv-eq {A = A} {B})
+module _ {ℓ} where
+  Univalence : Type (lsuc ℓ)
+  Univalence = ∀ (A B : Type ℓ) → is-equiv (equiv-eq {A = A} {B})
   UnivalenceAlt : Type (lsuc ℓ)
-  UnivalenceAlt = (A ≃ B) ≃ (A ≡ B)
+  UnivalenceAlt = ∀ (A B : Type ℓ) → (A ≡ B) ≃ (A ≃ B)
 
-alt-to-ua-lem : is-contr (Σ B ꞉ Type ℓ , A ≃ B)
-alt-to-ua-lem = {!fund-theorem-id-types-i-to-ii!}
+module _ {ℓ} {A : Type ℓ} {UA : UnivalenceAlt {ℓ}} where
+  alt-to-ua-lem : is-contr (Σ B ꞉ Type ℓ , A ≃ B)
+  alt-to-ua-lem = fund-theorem-id-types-i-to-ii A (λ B → fwd (UA A B)) λ B → _≃_.is-equivalence (UA A B)
+  -- alt-to-ua-lem {A = A} = {!fund-theorem-id-types-i-to-ii {B = A ≃_}!}
 
 -- prop ext
 -- Prop U := Σ x ꞉ U , is-prop x

@@ -173,8 +173,13 @@ for any q : ∥A = X∥, we have that
 p∗(q) = q · |p| : ∥A = Y ∥ .
 -}
 
-_∙∣_ : (p : ∥ A ≡ B ∥'₋₁) → (q : ∥ B ≡ C ∥'₋₁) → ∥ A ≡ C ∥'₋₁
-_∙∣_ = q2b-1
+_∣∙∣_ : (p : ∥ A ≡ B ∥'₋₁) → (q : ∥ B ≡ C ∥'₋₁) → ∥ A ≡ C ∥'₋₁
+_∣∙∣_ = q2b-1
+
+_∣∙_ : (p : ∥ A ≡ B ∥'₋₁) → (q : B ≡ C) → ∥ A ≡ C ∥'₋₁
+pp ∣∙ q = do
+  p ← pp
+  ∣ p ∙ q ∣'
 
 module _ {X Y A B : Type}  where
   private
@@ -188,15 +193,16 @@ module _ {X Y A B : Type}  where
 
     -- in the family myFam, a path p : X ≡ Y acts by post-composition
     recall : (p : X ≡ Y) → (q : A ≡ X) → map (p *) q ≡ q ∙ p
-    recall p q = {!!}
+    recall (refl .X) q = refl _
     -- recall (refl .X) (refl .X) = {!map (refl X *) ∣ refl X ∣' ≡ ∣ refl X ∣'
 
   open q2a {A = X} {Y} myFam
 
 
   -- q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → map (p *) q ≡ (q ∙∣ ∣ p ∣')
-  q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → map (p *) q ≡ (| q ∙ ∣ p ∣' |)
-  q2c = {!!}
+  -- q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → map (p *) q ≡ (| q ∙ ∣ p ∣' |)
+  q2c : (p : X ≡ Y) → (q : ∥ A ≡ X ∥'₋₁) → map (p *) q ≡ (q ∣∙ p)
+  q2c p q = {! recall p !}
 
 -- q3-1
 
