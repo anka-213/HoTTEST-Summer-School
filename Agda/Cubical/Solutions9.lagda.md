@@ -129,11 +129,14 @@ Eckmann-Hilton {x = x} p q k i =
         (pre-EH p q k i)
 
 ```
-# Part 2: Binary numbers as a HIT
+# # Part 2: Binary numbers as a HIT
 Here is another HIT describing binary numbers. The idea is that a binary number is a list of booleans, modulo trailing zeros.
 
-For instance, `true ∷ false ∷ true ∷ []` is the binary number 101...
-... and so is `true ∷ false ∷ true ∷ false ∷ false ∷ []`
+For instance, `true ∷ true ∷ true ∷ []` is the binary number 110 ...
+... and so is `true ∷ true ∷ false ∷ false ∷ false ∷ []`
+
+(!) Note that we're interpreting 110 as 1·2⁰ + 1·2¹ + 0·2² here.
+
 ```agda
 0B = false
 1B = true
@@ -171,13 +174,11 @@ rUnit+LB : (x : ListBin) → x +LB [] ≡ x
 (x ∷ xs) +LB [] = x ∷ xs
 (true ∷ xs) +LB (true ∷ ys) = false ∷ sucListBin (xs +LB ys)
 (true ∷ xs) +LB (false ∷ ys) = true ∷ (xs +LB ys)
-(false ∷ xs) +LB (true ∷ ys) = true ∷ (xs +LB ys)
-(false ∷ xs) +LB (false ∷ ys) = false ∷ (xs +LB ys)
+(false ∷ xs) +LB (y ∷ ys) = y ∷ (xs +LB ys)
 (true ∷ xs) +LB drop0 i = true ∷ (rUnit+LB xs i)
 (false ∷ xs) +LB drop0 i = false ∷ (rUnit+LB xs i)
 drop0 i +LB [] = drop0 i
-drop0 i +LB (true ∷ y) = true ∷ y
-drop0 i +LB (false ∷ y) = false ∷ y
+drop0 i +LB (y ∷ ys) = y ∷ ys
 drop0 i +LB drop0 j = drop0 (j ∧ i)
 rUnit+LB [] = refl
 rUnit+LB (x ∷ x₁) = refl
